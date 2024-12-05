@@ -1,0 +1,30 @@
+name: Validate Nix Flake
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+    - '**.nix'
+    - '**.lock'
+    - '.github/workflows/flake.yml'
+
+jobs:
+  check-flake:
+    name: Check Flake Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          logger: pretty
+      - name: Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Check Nix flake inputs
+        uses: DeterminateSystems/flake-checker-action@v4
+      - name: Check Flake
+        run: nix flake check --accept-flake-config
