@@ -1,0 +1,38 @@
+name: Update Flake Lock
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+  # push:
+  #   paths:
+  #     - "**.nix"
+  #     - "**.lock"
+  #     - ".github/workflows/flake.yml"
+
+jobs:
+  update-flake:
+    name: Update Lock File
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          logger: pretty
+      # - name: Cache
+      #   uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Check Nix flake inputs
+        uses: DeterminateSystems/flake-checker-action@v4
+      - name: Check Flake
+        run: nix flake update
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: update lock file"
+          file_pattern: "*.lock"
