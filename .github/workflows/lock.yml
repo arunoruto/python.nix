@@ -30,7 +30,7 @@ jobs:
       #   uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v4
-      - name: Check Flake
+      - name: Lock Flake
         run: nix flake update
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
