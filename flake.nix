@@ -56,6 +56,9 @@
           ...
         }:
         let
+          # Change this name as you would import it in your python scripts
+          package-name = "localpackage";
+
           project = pyproject-nix.lib.project.loadPyproject { projectRoot = ./.; };
           workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
 
@@ -63,8 +66,12 @@
             sourcePreference = "wheel";
           };
 
-          pyprojectOverrides = _final: _prev: {
+          pyprojectOverrides = final: prev: {
             # Implement build fixups here.
+            numba = prev.numba.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.tbb_2021_11 ];
+            });
+
           };
 
           python = pkgs.python3;
@@ -85,10 +92,10 @@
         {
           packages = {
             default = self'.packages.package;
-            package = python.pkgs.buildPythonPackage (
+            ${package-name} = python.pkgs.buildPythonPackage (
               (project.renderers.buildPythonPackage { inherit python; }) // { env.CUSTOM_ENVVAR = "hello"; }
             );
-            package-env = pythonSet.mkVirtualEnv "package-env" workspace.deps.default;
+            "${package-name}-env" = pythonSet.mkVirtualEnv "${package-name}-env" workspace.deps.default;
           };
 
           devShells = {
@@ -106,7 +113,7 @@
               pkgs.mkShell {
                 packages = [
                   pythonEnv
-                  self'.packages.package
+                  self'.packages.${package-name}
                 ];
               };
 
@@ -128,7 +135,7 @@
 
                 editablePythonSet = pythonSet.overrideScope editableOverlay;
 
-                virtualenv = editablePythonSet.mkVirtualEnv "package-dev-env" workspace.deps.default;
+                virtualenv = editablePythonSet.mkVirtualEnv "${package-name}-dev-env" workspace.deps.default;
 
               in
               pkgs.mkShell {
