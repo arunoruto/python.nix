@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-    - '**.nix'
-    - '**.lock'
-    - '.github/workflows/flake.yml'
+      - "**.nix"
+      - "**.lock"
+      - ".github/workflows/flake.yml"
 
 jobs:
   check-flake:
@@ -22,8 +22,8 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
         with:
           logger: pretty
-      - name: Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+      # - name: Cache
+      #   uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v4
       - name: Check Flake
