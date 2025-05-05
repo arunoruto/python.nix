@@ -91,7 +91,7 @@
         in
         {
           packages = {
-            default = self'.packages.package;
+            default = self'.packages.${package-name};
             ${package-name} = python.pkgs.buildPythonPackage (
               (project.renderers.buildPythonPackage { inherit python; }) // { env.CUSTOM_ENVVAR = "hello"; }
             );
