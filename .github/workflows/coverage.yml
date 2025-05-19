@@ -1,0 +1,47 @@
+name: Coverage
+
+on:
+  # workflow_call:
+  workflow_dispatch:
+
+jobs:
+  testing:
+    uses: ./.github/workflows/test.yml
+
+  deepsource-coverage-reporter:
+    runs-on: ubuntu-latest
+    name: DeepSource coverage reporter
+    needs: unittest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: python
+          coverage-file: coverage.xml
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}
+
+  codecov-coverage-reporter:
+    runs-on: ubuntu-latest
+    name: CodeCov coverage reporter
+    needs: unittest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
