@@ -1,0 +1,55 @@
+name: Testing
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  unittest:
+    name: PyTest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        id: setup-python
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - uses: actions/cache@v4
+        id: cache-env
+        with:
+          path: .venv
+          key: ${{ runner.os }}-uv-${{ steps.setup-python.outputs.uv-version }}-env-${{ hashFiles('uv.lock') }}
+
+      - name: Setup venv for testing & Install dependencies
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        run: |
+          uv venv
+          uv sync --extra test
+
+      # - name: Cache databases
+      #   id: cache-databases
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/refidxdb
+      #     key: ${{ runner.os }}-databases-${{ hashFiles('pyproject.toml') }}
+
+      # - name: Download databases
+      #   if: steps.cache-databases.outputs.cache-hit != 'true'
+      #   run: uv run refidxdb db --download all
+
+      - name: Test and coverage report with pytest
+        run: uv run pytest --cov --cov-report xml --junitxml=junit.xml -o junit_family=legacy
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            junit.xml
+            htmlcov/
+          retention-days: 7
