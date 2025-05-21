@@ -21,7 +21,7 @@ jobs:
       cancel-in-progress: false
     environment:
       name: pypi
-      url: https://pypi.org/p/refidxdb
+      url: https://pypi.org/p/${{ github.event.repository.name }} # NOTE: needs to be changed maybe
     permissions:
       id-token: write
       contents: write

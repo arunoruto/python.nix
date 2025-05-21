@@ -12,39 +12,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
+      - name: Setup | Install uv
         id: setup-python
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
 
       - uses: actions/cache@v4
+        name: Setup | Check cache
         id: cache-env
         with:
           path: .venv
           key: ${{ runner.os }}-uv-${{ steps.setup-python.outputs.uv-version }}-env-${{ hashFiles('uv.lock') }}
 
-      - name: Setup venv for testing & Install dependencies
+      - name: Setup | venv for testing & install dependencies
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           uv venv
-          uv sync --extra test
+          uv sync --group test
 
-      # - name: Cache databases
-      #   id: cache-databases
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.cache/refidxdb
-      #     key: ${{ runner.os }}-databases-${{ hashFiles('pyproject.toml') }}
-
-      # - name: Download databases
-      #   if: steps.cache-databases.outputs.cache-hit != 'true'
-      #   run: uv run refidxdb db --download all
-
-      - name: Test and coverage report with pytest
+      - name: Testing | Test and coverage report with pytest
         run: uv run pytest --cov --cov-report xml --junitxml=junit.xml -o junit_family=legacy
 
-      - name: Upload artifact
+      - name: Artifact | Upload
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report

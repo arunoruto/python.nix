@@ -1,0 +1,38 @@
+name: "Build docs"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/**/*"
+      - ".github/workflows/docs.yml"
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Setup | Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup | Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup | Export requirements
+        run: uv export --no-hashes --only-group docs > ./docs/requirements.txt
+
+      - id: deployment
+        uses: sphinx-notes/pages@v3
+        with:
+          checkout: false
+          cache: true
+          documentation_path: ./docs/source

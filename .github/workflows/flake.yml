@@ -8,6 +8,10 @@ on:
       - "**.lock"
       - ".github/workflows/flake.yml"
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check-flake:
     name: Check Flake Setup
